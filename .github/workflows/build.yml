@@ -5,35 +5,41 @@ on:
     branches:
       - main
 
-
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: sonarsource/sonarqube-scan-action@master
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'  # Set the Node.js version you need
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Run SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: sonarsource/sonarqube-quality-gate-action@master
+
+      # Uncomment the following lines if you wish to fail your job when the Quality Gate is red
+      # - name: SonarQube Quality Gate
+      #   uses: sonarsource/sonarqube-quality-gate-action@master
       #   timeout-minutes: 5
-      #  env:
-       #   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: NPL install
-        run: npm install
-        
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Docker build and push
         run: |
-          # Run commands to build and push Docker images
           docker build -t swiggy-clone .
           docker tag swiggy-clone isika05/swiggy-clone:latest
-          docker login -u ${{ secrets.Dockerhub_username }} -p ${{ secrets.Dockerhub_token }}
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           docker push isika05/swiggy-clone:latest
-        env:
-          DOCKER_CLI_ACI: 1
