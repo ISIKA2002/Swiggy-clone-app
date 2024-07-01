@@ -25,10 +25,10 @@ jobs:
 
       - name: Docker build and push
         run: |
-          docker build -t swiggy-clone .
-          docker tag swiggy-clone isika05/swiggy-clone:latest
+          docker build -t swiggy-clone-app .
+          docker tag swiggy-clone-app isika05/swiggy-clone-app:latest
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push isika05/swiggy-clone:latest
+          docker push isika05/swiggy-clone-app:latest
         env:
           DOCKER_CLI_ACI: 1
 
@@ -37,7 +37,7 @@ jobs:
     runs-on: [self-hosted]
     steps:
       - name: Docker pull image
-        run: docker pull isika05/swiggy-clone:latest
+        run: docker pull isika05/swiggy-clone-app:latest
 
       - name: Image scan
         run: trivy image isika05/swiggy-clone:latest > trivyimagedeploy.txt
