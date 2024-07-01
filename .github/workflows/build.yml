@@ -3,15 +3,14 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
-    name: Build and analyze
-    runs-on: ubuntu-latest
-    
+    name: Build
+    runs-on: [self-hosted]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
@@ -25,10 +24,11 @@ jobs:
 
       - name: Docker build and push
         run: |
-          docker build -t swiggy-clone-app .
-          docker tag swiggy-clone-app isika05/swiggy-clone-app:latest
+          # Run commands to build and push Docker images
+          docker build -t swiggy-clone .
+          docker tag swiggy-clone aakibkhan1212/swiggy-clone:latest
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push isika05/swiggy-clone-app:latest
+          docker push aakibkhan1212/swiggy-clone:latest
         env:
           DOCKER_CLI_ACI: 1
 
@@ -37,13 +37,17 @@ jobs:
     runs-on: [self-hosted]
     steps:
       - name: Docker pull image
-        run: docker pull isika05/swiggy-clone-app:latest
+        run: docker pull aakibkhan1212/swiggy-clone:latest
 
       - name: Image scan
-        run: trivy image isika05/swiggy-clone:latest > trivyimagedeploy.txt
+        run: trivy image aakibkhan1212/swiggy-clone:latest > trivyimagedeploy.txt
 
       - name: Update kubeconfig
-        run: aws eks --region us-east-1 update-kubeconfig --name EKS_CLOUD
+        run: aws eks --region ap-south-1 update-kubeconfig --name EKS_CLOUD
 
       - name: Deploy to Kubernetes
         run: kubectl apply -f deployment-service.yml
+
+      # Optionally, wait for deployment rollout to complete
+      - name: Wait for deployment rollout
+        run: kubectl rollout status deployment swiggy-clone
