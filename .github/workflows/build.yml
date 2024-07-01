@@ -1,38 +1,37 @@
-name: Build and Push Docker Image
+name: Build
 
 on:
   push:
     branches:
       - main
 
+
 jobs:
   build:
-    name: Build and Push Docker Image
-    runs-on: self-hosted  # Adjust this as per your self-hosted runner configuration
-
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: SonarQube Scan
-        id: sonarqube_scan
-        uses: sonarsource/sonarqube-scan-action@master
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: Install dependencies
-        id: npm_install
-        run: npm ci --only=prod
-
-      - name: Docker Build and Push
-        if: success()  # Execute only if all previous steps were successful
+      - name: NPM Install
+        run: npm install
+      - name: install trivy
         run: |
+          #scanning file
+          trivy fs . > trivyfs.txt
+         
+      - name: Docker build and push
+        run: |
+          # Run commands to build and push Docker images
           docker build -t swiggy-clone .
           docker tag swiggy-clone isika05/swiggy-clone:latest
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           docker push isika05/swiggy-clone:latest
         env:
           DOCKER_CLI_ACI: 1
