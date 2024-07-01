@@ -17,15 +17,18 @@ jobs:
           fetch-depth: 0
 
       - name: SonarQube Scan
+        id: sonarqube_scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: Install dependencies
-        run: npm ci --only=prod  # Use npm ci for faster and consistent installs
+        id: npm_install
+        run: npm ci --only=prod
 
       - name: Docker Build and Push
+        if: success()  # Execute only if all previous steps were successful
         run: |
           docker build -t swiggy-clone .
           docker tag swiggy-clone isika05/swiggy-clone:latest
