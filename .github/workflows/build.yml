@@ -31,7 +31,7 @@ jobs:
           # Run commands to build and push Docker images
           docker build -t swiggy-clone .
           docker tag swiggy-clone isika05/swiggy-clone:latest
-          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }} --password-stdin
           docker push isika05/swiggy-clone:latest
         env:
           DOCKER_CLI_ACI: 1
