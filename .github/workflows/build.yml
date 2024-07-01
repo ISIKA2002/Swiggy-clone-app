@@ -1,4 +1,4 @@
-name: Build and analyze
+name: Build and Deploy
 
 on:
   push:
@@ -25,10 +25,27 @@ jobs:
 
       - name: Docker build and push
         run: |
-          # Run commands to build and push Docker images
           docker build -t swiggy-clone .
           docker tag swiggy-clone isika05/swiggy-clone:latest
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
           docker push isika05/swiggy-clone:latest
         env:
           DOCKER_CLI_ACI: 1
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted]
+    steps:
+      - name: Docker pull image
+        run: docker pull isika05/swiggy-clone:latest
+
+      - name: Image scan
+        run: trivy image isika05/swiggy-clone:latest > trivyimagedeploy.txt
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl create deployment swiggy-clone --image=isika05/swiggy-clone:latest
+          kubectl expose deployment swiggy-clone --type=LoadBalancer --port=3000 --target-port=3000
+
+          # Optionally, wait for deployment rollout to complete
+          kubectl rollout status deployment swiggy-clone
