@@ -1,4 +1,4 @@
-name: Build
+name: Build and Push Docker Image
 
 on:
   push:
@@ -8,13 +8,13 @@ on:
 jobs:
   build:
     name: Build and Push Docker Image
-    runs-on: [self-hosted]  # Ensure your self-hosted runner is correctly set up
+    runs-on: self-hosted  # Adjust this as per your self-hosted runner configuration
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -23,7 +23,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --only=prod  # Use npm ci for faster and consistent installs
 
       - name: Docker Build and Push
         run: |
