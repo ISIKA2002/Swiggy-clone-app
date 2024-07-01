@@ -1,5 +1,5 @@
 # Use Node.js 16 slim as the base image
-FROM node:16-slim
+FROM node:16
 
 # Set the working directory
 WORKDIR /app
@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install production dependencies
-RUN npm ci --only=prod
+# Install dependencies
+RUN npm install
 
 # Copy the rest of the application code
 COPY . .
