@@ -23,5 +23,17 @@ jobs:
       # following lines. This would typically be used to fail a deployment.
       # - uses: sonarsource/sonarqube-quality-gate-action@master
       #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #  env:
+       #   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: NPL install
+        run: npm install
+        
+      - name: Docker build and push
+        run: |
+          # Run commands to build and push Docker images
+          docker build -t swiggy-clone .
+          docker tag swiggy-clone isika05/swiggy-clone:latest
+          docker login -u ${{ secrets.Dockerhub_username }} -p ${{ secrets.Dockerhub_token }}
+          docker push isika05/swiggy-clone:latest
+        env:
+          DOCKER_CLI_ACI: 1
