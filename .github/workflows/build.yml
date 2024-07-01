@@ -26,9 +26,9 @@ jobs:
         run: |
           # Run commands to build and push Docker images
           docker build -t swiggy-clone .
-          docker tag swiggy-clone aakibkhan1212/swiggy-clone:latest
+          docker tag swiggy-clone isika05/swiggy-clone:latest
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push aakibkhan1212/swiggy-clone:latest
+          docker push isika05/swiggy-clone:latest
         env:
           DOCKER_CLI_ACI: 1
 
@@ -37,13 +37,13 @@ jobs:
     runs-on: [self-hosted]
     steps:
       - name: Docker pull image
-        run: docker pull aakibkhan1212/swiggy-clone:latest
+        run: docker pull isika05/swiggy-clone:latest
 
       - name: Image scan
-        run: trivy image aakibkhan1212/swiggy-clone:latest > trivyimagedeploy.txt
+        run: trivy image isika05/swiggy-clone:latest > trivyimagedeploy.txt
 
       - name: Update kubeconfig
-        run: aws eks --region ap-south-1 update-kubeconfig --name EKS_CLOUD
+        run: aws eks --region us-east-1 update-kubeconfig --name EKS_CLOUD
 
       - name: Deploy to Kubernetes
         run: kubectl apply -f deployment-service.yml
