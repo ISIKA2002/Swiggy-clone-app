@@ -7,24 +7,26 @@ on:
 
 jobs:
   build:
-    name: Build
-    runs-on: [self-hosted]
+    name: Build and Analyze
+    runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
 
-      - uses: sonarsource/sonarqube-scan-action@master
+      - name: Run SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-      - name: NPM Install
+      - name: Install NPM Dependencies
         run: npm install
 
-      - name: Docker build and push
+      - name: Build and Push Docker Image
         run: |
-          # Run commands to build and push Docker images
           docker build -t swiggy-clone .
           docker tag swiggy-clone isika05/swiggy-clone:latest
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
