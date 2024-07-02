@@ -31,7 +31,7 @@ resource "aws_security_group" "my-ec2" {
 
 
 resource "aws_instance" "web" {
-  ami                    = "ami-03f4878755434977f" # change your ami name 
+  ami                    = "ami-0e001c9271cf7f3b9" # change your ami name 
   instance_type          = "t2.medium"
   key_name               = "my key"
   vpc_security_group_ids = [aws_security_group.my-ec2.id]
