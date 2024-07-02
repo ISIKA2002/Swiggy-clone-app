@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
 
       - uses: sonarsource/sonarqube-scan-action@master
         env:
@@ -25,10 +25,23 @@ jobs:
 
       - name: Docker build and push
         run: |
-          # Run commands to build and push Docker images
           docker build -t swiggy-clone .
           docker tag swiggy-clone isika05/swiggy-clone:latest
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
           docker push isika05/swiggy-clone:latest
         env:
           DOCKER_CLI_ACI: 1
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted]
+    steps:
+      - name: Docker pull image
+        run: docker pull isika05/swiggy-clone:latest
+
+      - name: Image scan
+        run: trivy image isika05/swiggy-clone:latest > trivyimagedeploy.txt
+        
+      - name: Deploy to container
+        run: docker run -d --name swiggy-clone1 -p 3000:3000 isika05/swiggy-clone:latest
+      
